@@ -7,9 +7,14 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql:rw
 
   adminer:
     image: adminer
     restart: always
     environment:
       ADMINER_DESIGN: dracula
+
+volumes:
+  db_data:
