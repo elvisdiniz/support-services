@@ -31,9 +31,32 @@ services:
       - 'traefik.http.routers.adminer.rule=Host(`adminer.elvisdiniz.com`)'
       - 'traefik.http.routers.adminer.entrypoints=websecure'
       - 'traefik.http.routers.adminer.tls=true'
-      - 'traefik.http.routers.adminer.tls.certresolver=staging'
+      - 'traefik.http.routers.adminer.tls.certresolver=production'
     depends_on:
       - db
+
+  ha-casa:
+    image: linuxserver/openssh-server:latest
+    restart: unless-stopped
+    ports:
+      - 2222:2222  # External SSH port, to be used with autossh by homeassistant
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - USER_NAME=homeassistant
+      - PASSWORD_ACCESS=false
+      - SUDO_ACCESS=false
+      - PUBLIC_KEY_FILE=/authorized_keys
+    volumes:
+      - ./ha-casa/openssh_config:/config  # Enable AllowTcpForwarding and GatewayPorts after creation during first run
+      - ./ha-casa/authorized_keys:/authorized_keys:ro  # Store the generated ssh key here
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.ha-casa.rule: Host(`homeassistant.elvisdiniz.com`)
+      traefik.http.routers.ha-casa.tls.certresolver: production
+      traefik.http.routers.ha-casa.service: ha-casa
+      traefik.http.services.ha-casa.loadbalancer.server.port: 8001
 
 volumes:
   db_data:
