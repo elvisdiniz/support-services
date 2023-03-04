@@ -7,6 +7,11 @@ global:
 entryPoints:
   web:
     address: ":80" # Listen on port 80 for HTTP requests
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
   websecure:
     address: ":443" # Listen on port 443 for HTTPS requests
 
@@ -24,3 +29,10 @@ certificatesResolvers:
       storage: "/etc/traefik/certs/acme.json" # Set the file to store the certificates
       httpChallenge: # Use HTTP challenge to prove domain ownership
         entryPoint: web # Use the web entrypoint for the challenge
+  staging:
+    acme:
+      email: elvisdiniz@outlook.com
+      storage: /etc/traefik/certs/acme.json
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web
