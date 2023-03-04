@@ -1,0 +1,26 @@
+# Define the global options for Traefik
+global:
+  checkNewVersion: true # Check for new versions periodically
+  sendAnonymousUsage: false # Send anonymous usage statistics
+
+# Define the entrypoints for incoming traffic
+entryPoints:
+  web:
+    address: ":80" # Listen on port 80 for HTTP requests
+  websecure:
+    address: ":443" # Listen on port 443 for HTTPS requests
+
+# Define the providers of dynamic configuration
+providers:
+  docker: # Use Docker as a provider
+    endpoint: "unix:///var/run/docker.sock" # Connect to the Docker socket
+    exposedByDefault: false # Do not expose containers by default
+
+# Define the certificate resolvers for HTTPS
+certificatesResolvers:
+  production: # Give a name to the resolver
+    acme: # Use ACME as the challenge provider
+      email: "elvisdiniz@outlook.com" # Set your email address
+      storage: "/etc/traefik/certs/acme.json" # Set the file to store the certificates
+      httpChallenge: # Use HTTP challenge to prove domain ownership
+        entryPoint: web # Use the web entrypoint for the challenge
