@@ -53,10 +53,28 @@ services:
       - ./ha-casa/authorized_keys:/authorized_keys:ro  # Store the generated ssh key here
     labels:
       traefik.enable: "true"
-      traefik.http.routers.ha-casa.rule: Host(`homeassistant.elvisdiniz.com`)
+      traefik.http.routers.ha-casa.rule: Host(`ha-casa.elvisdiniz.com`)
       traefik.http.routers.ha-casa.tls.certresolver: production
       traefik.http.routers.ha-casa.service: ha-casa
       traefik.http.services.ha-casa.loadbalancer.server.port: 8001
+
+  db_backup:
+    image: databack/mysql-backup:latest
+    environment:
+      DB_SERVER: db
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER:-root}
+      DB_PASS: ${MYSQL_ROOT_PASSWORD}
+      DB_DUMP_FREQ: ${DB_DUMP_FREQ:-1440}
+      DB_DUMP_BEGIN: ${DB_DUMP_BEGIN:-+4}
+      COMPRESSION: ${COMPRESSION:-bzip2}
+      DB_DUMP_SAFECHARS: "1"
+      DB_DUMP_TARGET: s3://${AWS_BUCKET_NAME}/drax-db-backup
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+    depends_on:
+      - db
 
 volumes:
   db_data:
