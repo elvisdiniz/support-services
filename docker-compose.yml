@@ -66,7 +66,7 @@ services:
       DB_USER: ${MYSQL_USER:-root}
       DB_PASS: ${MYSQL_ROOT_PASSWORD}
       DB_DUMP_FREQ: ${DB_DUMP_FREQ:-1440}
-      DB_DUMP_BEGIN: ${DB_DUMP_BEGIN:-+4}
+      DB_DUMP_BEGIN: ${DB_DUMP_BEGIN:-2000}
       COMPRESSION: ${COMPRESSION:-bzip2}
       DB_DUMP_SAFECHARS: "1"
       DB_DUMP_TARGET: s3://${AWS_BUCKET_NAME}/drax-db-backup
@@ -75,6 +75,36 @@ services:
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
     depends_on:
       - db
+
+  message_broker:
+    image: rabbitmq:${RABBITMQ_VERSION:-3.12}-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-app}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+    ports:
+      - 5672:5672
+
+  mercure_gl:
+    image: dunglas/mercure
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ":80"
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_KEY}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_KEY}
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins https://gestaodelicitacoes.com
+        publish_origins https://gestaodelicitacoes.com
+        anonymous
+        subscriptions
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.mercure.rule: Host(`hub.gestaodelicitacoes.com`)
+      traefik.http.routers.mercure.entrypoints: websecure
+      traefik.http.routers.mercure.tls: "true"
+      traefik.http.routers.mercure.tls.certresolver: production
+
 
 volumes:
   db_data:
