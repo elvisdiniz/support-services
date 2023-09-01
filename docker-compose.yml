@@ -3,6 +3,7 @@ version: '3.1'
 services:
   traefik:
     image: traefik:latest
+    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -27,11 +28,11 @@ services:
     environment:
       ADMINER_DESIGN: dracula
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.adminer.rule=Host(`adminer.elvisdiniz.com`)'
-      - 'traefik.http.routers.adminer.entrypoints=websecure'
-      - 'traefik.http.routers.adminer.tls=true'
-      - 'traefik.http.routers.adminer.tls.certresolver=production'
+      traefik.enable: true
+      traefik.http.routers.adminer.rule: Host(`adminer.elvisdiniz.com`)
+      traefik.http.routers.adminer.entrypoints: websecure
+      traefik.http.routers.adminer.tls: true
+      traefik.http.routers.adminer.tls.certresolver: production
     depends_on:
       - db
 
@@ -39,7 +40,7 @@ services:
     image: linuxserver/openssh-server:latest
     restart: unless-stopped
     ports:
-      - 2222:2222  # External SSH port, to be used with autossh by homeassistant
+      - 2222:2222 # External SSH port, to be used with autossh by homeassistant
     environment:
       - PUID=1000
       - PGID=1000
@@ -49,8 +50,8 @@ services:
       - SUDO_ACCESS=false
       - PUBLIC_KEY_FILE=/authorized_keys
     volumes:
-      - ./ha-casa/openssh_config:/config  # Enable AllowTcpForwarding and GatewayPorts after creation during first run
-      - ./ha-casa/authorized_keys:/authorized_keys:ro  # Store the generated ssh key here
+      - $PWD/ha-casa/openssh_config:/config # Enable AllowTcpForwarding and GatewayPorts after creation during first run
+      - $PWD/ha-casa/authorized_keys:/authorized_keys:ro # Store the generated ssh key here
     labels:
       traefik.enable: "true"
       traefik.http.routers.ha-casa.rule: Host(`ha-casa.elvisdiniz.com`)
@@ -104,7 +105,6 @@ services:
       traefik.http.routers.mercure.entrypoints: websecure
       traefik.http.routers.mercure.tls: "true"
       traefik.http.routers.mercure.tls.certresolver: production
-
 
 volumes:
   db_data:
