@@ -22,6 +22,16 @@ services:
     ports:
       - 3306:3306
 
+  postgresql_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - postgresql_db_data:/var/lib/postgresql/data
+
   adminer:
     image: adminer
     restart: always
@@ -35,6 +45,7 @@ services:
       traefik.http.routers.adminer.tls.certresolver: production
     depends_on:
       - mysql_db
+      - postgresql_db
 
   ha-casa:
     image: linuxserver/openssh-server:latest
@@ -108,4 +119,5 @@ services:
 
 volumes:
   mysql_db_data:
+  postgresql_db_data:
   traefik_config:
