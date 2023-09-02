@@ -27,6 +27,7 @@ certificatesResolvers:
     acme: # Use ACME as the challenge provider
       email: "elvisdiniz@outlook.com" # Set your email address
       storage: "/etc/traefik/certs/acme.json" # Set the file to store the certificates
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
       httpChallenge: # Use HTTP challenge to prove domain ownership
         entryPoint: web # Use the web entrypoint for the challenge
   staging:
