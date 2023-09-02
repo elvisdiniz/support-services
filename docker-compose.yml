@@ -5,20 +5,20 @@ services:
     image: traefik:latest
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80
+      - 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_config:/etc/traefik
       - $PWD/config/traefik.yml:/etc/traefik/traefik.yml:ro
 
-  db:
+  mysql_db:
     image: mysql:8.0
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - db_data:/var/lib/mysql:rw
+      - mysql_db_data:/var/lib/mysql:rw
     ports:
       - 3306:3306
 
@@ -34,7 +34,7 @@ services:
       traefik.http.routers.adminer.tls: true
       traefik.http.routers.adminer.tls.certresolver: production
     depends_on:
-      - db
+      - mysql_db
 
   ha-casa:
     image: linuxserver/openssh-server:latest
@@ -59,7 +59,7 @@ services:
       traefik.http.routers.ha-casa.service: ha-casa
       traefik.http.services.ha-casa.loadbalancer.server.port: 8001
 
-  db_backup:
+  mysql_db_backup:
     image: databack/mysql-backup:latest
     environment:
       DB_SERVER: db
@@ -75,7 +75,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
     depends_on:
-      - db
+      - mysql_db
 
   message_broker:
     image: rabbitmq:${RABBITMQ_VERSION:-3.12}-alpine
@@ -107,5 +107,5 @@ services:
       traefik.http.routers.mercure.tls.certresolver: production
 
 volumes:
-  db_data:
+  mysql_db_data:
   traefik_config:
