@@ -30,7 +30,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - postgresql_db_data:/var/lib/postgresql/data
+      - postgresql_db_data:/var/lib/postgresql/data:rw
 
   adminer:
     image: adminer
@@ -117,7 +117,27 @@ services:
       traefik.http.routers.mercure.tls: "true"
       traefik.http.routers.mercure.tls.certresolver: production
 
+  container_registry:
+    restart: always
+    image: registry:2
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+    volumes:
+      - container_registry:/var/lib/registry:rw
+      - $PWD/container-registry/auth:/auth:ro
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.cr.rule: Host(`cr.elvisdiniz.com`)
+      traefik.http.routers.cr.entrypoints: websecure
+      traefik.http.routers.cr.tls: true
+      traefik.http.routers.cr.tls.certresolver: production
+      traefik.http.routers.cr.service: cr
+      traefik.http.services.cr.loadbalancer.server.port: 5000
+
 volumes:
   mysql_db_data:
   postgresql_db_data:
   traefik_config:
+  container_registry:
